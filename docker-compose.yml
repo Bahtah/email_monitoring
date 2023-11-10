@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+#      - redis
+
+  db:
+    image: postgres:13-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env
+
+  redis:
+    image: redis:latest
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A email_monitoring worker --loglevel=info
+    depends_on:
+      - db
+      - redis
+
+  beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A email_monitoring beat --loglevel=info
+    depends_on:
+      - db
+      - redis
+
+volumes:
+  postgres_data:
