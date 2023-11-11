@@ -12,8 +12,6 @@ from read_email.models import Order
 
 @app.task
 def process_email(email_data, file_path):
-    print(f"Received email data: {email_data}")
-    print(f"Processing file: {file_path}")
 
     body = email_data['body']
 
@@ -114,10 +112,8 @@ def process_email(email_data, file_path):
                 order_number=order_number,
             )
             order.save()
-        print("Data parsed successfully")
         return {"status": "success"}
     except Exception as e:
-        print(f"Error processing email: {str(e)}")
         return {"status": "Ошибка при записи в бд"}
 
 
@@ -166,7 +162,6 @@ def process_email_task(email_data, file_path):
         process_email(email_data, file_path)
         try:
             os.remove(file_path)
-            print("delete file: ", file_path)
             logging.info(f"Удален файл: {file_path}")
         except Exception as e:
             logging.error(f"Ошибка при удалении файла: {file_path}, {str(e)}")
