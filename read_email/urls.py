@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from .api import OrderViewSet
-from .reg2 import read_gmail
+from read_email.email_parser import read_gmail
 
 
 router = DefaultRouter()
