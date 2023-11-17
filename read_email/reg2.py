@@ -14,8 +14,8 @@ from read_email.models import Order
 def process_email(email_data, file_path):
 
     body = email_data['body']
-
     if not body:
+        print("Пустой body")
         return {"status": "Пустое письмо"}
 
     try:
@@ -27,6 +27,8 @@ def process_email(email_data, file_path):
         if div:
             h = div.text.strip()
         else:
+            print("Ошибка при обработке почты")
+            print(body)
             return {"status": "Ошибка при обработке почты"}
 
         from_filed = soup.find('a').text.strip()
@@ -83,8 +85,13 @@ def process_email(email_data, file_path):
         formatted_posting_cen = datetime.datetime.strptime(this_posting_expires_cen, "%m/%d/%Y %H:%M") if this_posting_expires_cen else None
         formatted_posting_est = datetime.datetime.strptime(this_posting_expires_est, "%m/%d/%Y %H:%M") if this_posting_expires_est else None
 
+        try:
+            print(Order.objects.get(order_number=order_number).order_number)
+        except Order.DoesNotExist:
+            print("Не существует")
+
         if Order.objects.filter(order_number=order_number).exists():
-            print("Order с таким номером уже существует!")
+            print(f"Order номером {order_number} уже существует!")
         else:
             order = Order(
                 from_whom=from_filed,
@@ -114,6 +121,7 @@ def process_email(email_data, file_path):
             order.save()
         return {"status": "success"}
     except Exception as e:
+        print("Ошибка", e)
         return {"status": "Ошибка при записи в бд"}
 
 
@@ -128,7 +136,10 @@ def read_gmail():
 
     status, message_ids = mail.search(None, 'UNSEEN')
 
+    print(message_ids)
+
     for num in message_ids[0].split():
+        print(num)
         status, msg_data = mail.fetch(num, '(RFC822)')
         raw_email = msg_data[0][1]
         msg = email.message_from_bytes(raw_email)
@@ -138,6 +149,12 @@ def read_gmail():
             for part in msg.walk():
                 if part.get_content_type() == "text/html":
                     body = part.get_payload(decode=True).decode()
+                    print("Body Content:")
+                    print(body)
+        else:
+            body = msg.get_payload(decode=True).decode()
+            print("Body Content:")
+            print(body)
         current_datetime = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f")
         filename = f'{current_datetime}.html'
         file_path = os.path.join(save_dir, filename)
@@ -150,6 +167,7 @@ def read_gmail():
             'body': body,
         }
         process_email_task.apply_async(kwargs={"email_data": email_data, "file_path": file_path})
+
 
     mail.logout()
     num_unread_messages = len(message_ids[0].split())

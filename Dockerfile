@@ -11,5 +11,3 @@ ADD . /app/
 EXPOSE 8000
 RUN mkdir "static"
 
-#CMD ["/bin/sh", "-c", "python manage.py migrate && gunicorn --bind :8000 email_monitoring.wsgi:application"]
-
