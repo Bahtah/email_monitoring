@@ -6,8 +6,6 @@ import os
 from bs4 import BeautifulSoup
 from email_monitoring.settings import EMAIL_HOST_USER, EMAIL_HOST_PASSWORD
 from .models import Order
-import schedule
-import time
 
 
 def process_email_task(email_data):
@@ -178,15 +176,3 @@ def read_gmail():
     num_unread_messages = len(message_ids[0].split())
     return num_unread_messages
 
-
-def job():
-    print("Запуск задачи")
-    read_gmail()
-
-
-schedule.every(15).seconds.do(job)
-
-
-while True:
-    schedule.run_pending()
-    time.sleep(1)

@@ -13,8 +13,8 @@ app.autodiscover_tasks()
 
 
 app.conf.beat_schedule = {
-    'my_periodic_task': {
-        'task': 'read_email.tasks.read_gmail_task_v2',
+    'my_parser_task': {
+        'task': 'read_email.tasks.process_and_save_emails_task',
         'schedule': timedelta(seconds=15),
     },
 }
